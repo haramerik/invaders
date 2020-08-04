@@ -12,6 +12,9 @@ import javafx.stage.Stage;
 import java.util.List;
 import java.util.stream.Collectors;
 import static javafx.application.Application.launch;
+import javafx.scene.Group;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 /**
  * @author Almas Baimagambetov (almaslvl@gmail.com)
@@ -19,6 +22,10 @@ import static javafx.application.Application.launch;
 public class App extends Application {
 
     private Pane root = new Pane();
+    
+    private Group group = new Group();
+    
+    private boolean game_over = false;
 
     private double t = 0;
 
@@ -39,13 +46,15 @@ public class App extends Application {
         timer.start();
 
         nextLevel();
+        
+        group.getChildren().add(root);
 
-        return root;
+        return group;
     }
 
     private void nextLevel() {
         for (int i = 0; i < 5; i++) {
-            Sprite s = new Sprite(90 + i*100, 150, 30, 30, "enemy", Color.RED);
+            Sprite s = new Sprite(90 + i*100, 150, 30, 30, "enemy", Color.PURPLE);
 
             root.getChildren().add(s);
         }
@@ -57,7 +66,7 @@ public class App extends Application {
 
     private void update() {
         t += 0.016;
-
+        
         sprites().forEach(s -> {
             switch (s.type) {
 
@@ -115,6 +124,18 @@ public class App extends Application {
         Scene scene = new Scene(createContent());
 
         scene.setOnKeyPressed(e -> {
+            if(player.dead) {
+                if(game_over == false) {
+                    
+                    Text t = new Text(250, 100, "GAME OVER!");
+                    t.setFont(new Font(20));
+                    t.setFill(Color.RED);
+                    group.getChildren().add(t);
+
+                    game_over = true;
+                }
+                return;
+            }
             switch (e.getCode()) {
                 case A:
                     player.moveLeft();
@@ -124,6 +145,12 @@ public class App extends Application {
                     break;
                 case SPACE:
                     shoot(player);
+                    break;
+                case W:
+                    player.moveUp();
+                    break;
+                case S: 
+                    player.moveDown();
                     break;
             }
         });
@@ -138,7 +165,7 @@ public class App extends Application {
 
         Sprite(int x, int y, int w, int h, String type, Color color) {
             super(w, h, color);
-
+            
             this.type = type;
             setTranslateX(x);
             setTranslateY(y);
